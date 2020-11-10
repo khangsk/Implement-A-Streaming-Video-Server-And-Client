@@ -91,7 +91,8 @@ class ServerWorker:
 				print("processing PAUSE\n")
 				self.state = self.READY
 				
-				self.clientInfo['event'].set()
+				try: self.clientInfo['event'].set()
+				except: sys.exit(0)
 			
 				self.replyRtsp(self.OK_200, seq[0])
 		

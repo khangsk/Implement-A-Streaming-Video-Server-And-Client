@@ -43,24 +43,31 @@ class Client:
 		self.setup = Button(self.master, width=20, padx=3, pady=3)
 		self.setup["text"] = "Setup"
 		self.setup["command"] = self.setupMovie
+		self.setup["activebackground"] = "red"
+		self.setup["fg"] = "blue"
 		self.setup.grid(row=1, column=0, padx=2, pady=2)
 
 		# Create Play button
 		self.start = Button(self.master, width=20, padx=3, pady=3)
 		self.start["text"] = "Play"
 		self.start["command"] = self.playMovie
+		self.start["activebackground"] = "red"
+		self.start["fg"] = "green"
 		self.start.grid(row=1, column=1, padx=2, pady=2)
 
 		# Create Pause button
 		self.pause = Button(self.master, width=20, padx=3, pady=3)
 		self.pause["text"] = "Pause"
 		self.pause["command"] = self.pauseMovie
+		self.pause["activebackground"] = "red"
+		self.pause["fg"] = "orange"
 		self.pause.grid(row=1, column=2, padx=2, pady=2)
 
 		# Create Teardown button
 		self.teardown = Button(self.master, width=20, padx=3, pady=3)
 		self.teardown["text"] = "Teardown"
 		self.teardown["command"] =  self.exitClient
+		self.teardown["activebackground"] = "red"
 		self.teardown.grid(row=1, column=3, padx=2, pady=2)
 
 		# Create a label to display the movie
@@ -77,7 +84,10 @@ class Client:
 		self.sendRtspRequest(self.TEARDOWN)
 		#self.handler()
 		self.master.destroy() # Close the gui window
-		os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
+		try:
+			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
+		except:
+			sys.exit(0)
 		rate = float(self.counter/self.frameNbr)
 		print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
 		sys.exit(0)
@@ -146,9 +156,6 @@ class Client:
 			photo = ImageTk.PhotoImage(Image.open(imageFile)) #stuck here !!!!!!
 		except:
 			print("photo error")
-			print('-'*60)
-			traceback.print_exc(file=sys.stdout)
-			print('-'*60)
 
 		self.label.configure(image = photo, height=288)
 		self.label.image = photo
