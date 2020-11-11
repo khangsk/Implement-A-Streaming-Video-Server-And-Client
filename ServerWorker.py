@@ -164,7 +164,12 @@ class ServerWorker:
 			print(reply)
 			connSocket = self.clientInfo['rtspSocket'][0]
 			connSocket.send(reply.encode())
-
+		# Error messages
+		elif code == self.FILE_NOT_FOUND_404:
+			print("404 NOT FOUND")
+		elif code == self.CON_ERR_500:
+			print("500 CONNECTION ERROR")
+			
 	def replyDescribe(self, code, seq):
 		"""Send RTSP Describe reply to the client."""
 		if code == self.OK_200:
@@ -184,9 +189,3 @@ class ServerWorker:
 
 			connSocket = self.clientInfo['rtspSocket'][0]
 			connSocket.send(reply.encode())
-		
-		# Error messages
-		elif code == self.FILE_NOT_FOUND_404:
-			print("404 NOT FOUND")
-		elif code == self.CON_ERR_500:
-			print("500 CONNECTION ERROR")
