@@ -87,8 +87,9 @@ class Client:
 	def resetMovie(self):
 		if self.checkPlay:
 			self.pauseMovie()
-			try: os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
-			except: pass
+			for i in os.listdir():
+				if i.find(CACHE_FILE_NAME) == 0:
+					os.remove(i)
 			time.sleep(1)
 			self.state = self.INIT
 			# self.master.protocol("WM_DELETE_WINDOW", self.handler)
@@ -114,10 +115,9 @@ class Client:
 		self.sendRtspRequest(self.TEARDOWN)
 		#self.handler()
 		self.master.destroy() # Close the gui window
-		try:
-			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
-		except:
-			pass
+		for i in os.listdir():
+			if i.find(CACHE_FILE_NAME) == 0:
+				os.remove(i)
 		if self.frameNbr:
 			rate = float((self.frameNbr - self.counter)/self.frameNbr)
 			print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
