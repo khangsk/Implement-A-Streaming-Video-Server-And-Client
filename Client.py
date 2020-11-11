@@ -21,7 +21,7 @@ class Client:
 	
 	countPayload = 0
 	counter = 0
-
+	checkPlay = False
 	timestart = 0
 	timeend = 0
 	timeexe = 0
@@ -71,7 +71,7 @@ class Client:
 		# Create Teardown button
 		self.teardown = Button(self.master, width=20, padx=3, pady=3)
 		self.teardown["text"] = "Teardown"
-		self.teardown["command"] =  self.exitClient
+		self.teardown["command"] =  self.resetMovie
 		self.teardown["activebackground"] = "red"
 		self.teardown.grid(row=1, column=3, padx=2, pady=2)
 
@@ -83,6 +83,28 @@ class Client:
 		"""Setup button handler."""
 		if self.state == self.INIT:
 			self.sendRtspRequest(self.SETUP)
+	
+	def resetMovie(self):
+		if self.checkPlay:
+			self.pauseMovie()
+			try: os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
+			except: pass
+			time.sleep(1)
+			self.state = self.INIT
+			# self.master.protocol("WM_DELETE_WINDOW", self.handler)
+			self.rtspSeq = 0
+			self.sessionId = 0
+			self.requestSent = -1
+			self.teardownAcked = 0
+			self.frameNbr = 0
+			self.counter = 0
+			self.countPayload = 0
+			self.checkPlay = False
+			self.timestart = 0
+			self.timeend = 0
+			self.timeexe = 0
+			self.connectToServer()
+			self.rtpSocket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
 	def exitClient(self):
 		"""Teardown button handler."""
@@ -112,6 +134,7 @@ class Client:
 		"""Play button handler."""
 		if self.state == self.READY:
 			# Create a new thread to listen for RTP packets
+			self.checkPlay = True
 			self.timestart = time.time()
 			print("Playing Movie")
 			threading.Thread(target=self.listenRtp).start()
