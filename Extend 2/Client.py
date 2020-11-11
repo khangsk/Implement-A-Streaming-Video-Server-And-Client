@@ -82,6 +82,7 @@ class Client:
 			self.teardownAcked = 0
 			self.frameNbr = 0
 			self.counter = 0
+			self.check = False
 			self.connectToServer()
 			self.rtpSocket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 			self.setupMovie()
@@ -129,8 +130,7 @@ class Client:
 					rtpPacket.decode(data)
 					
 					currFrameNbr = rtpPacket.seqNum()
-					print("Current Seq Num: " + str(currFrameNbr))
-					print(len(rtpPacket.getPayload()))			
+					print("Current Seq Num: " + str(currFrameNbr))		
 					if currFrameNbr > self.frameNbr: # Discard the late packet
 						self.frameNbr = currFrameNbr
 						self.updateMovie(self.writeFrame(rtpPacket.getPayload()))
@@ -344,14 +344,4 @@ class Client:
 
 	def handler(self):
 		"""Handler on explicitly closing the GUI window."""
-		self.pauseMovie()
-		if tkinter.messagebox.askokcancel("Quit?", "Are you sure you want to quit?"):
-			self.exitClient()
-		else: # When the user presses cancel, resume playing.
-			#self.playMovie()
-			# print("Playing Movie")
-			# threading.Thread(target=self.listenRtp).start()
-			# #self.playEvent = threading.Event()
-			# #self.playEvent.clear()
-			# self.sendRtspRequest(self.PLAY)
-			self.playMovie()
+		self.exitClient()
