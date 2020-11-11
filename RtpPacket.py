@@ -1,9 +1,14 @@
 import sys
 from time import time
+# from VideoStream import VideoStream
+
+
+import VideoStream
 HEADER_SIZE = 12
 
 class RtpPacket:
-	header = bytearray(HEADER_SIZE)
+	#header = bytearray(HEADER_SIZE)
+	#HEADER_SIZE = 12
 
 	def __init__(self):
 		self.header = bytearray(HEADER_SIZE)
@@ -13,6 +18,7 @@ class RtpPacket:
 
 		timestamp = int(time())
 		print("timestamp: " + str(timestamp))
+		self.header = bytearray(HEADER_SIZE)
 		#--------------
 		# TO COMPLETE
 		#--------------
@@ -72,7 +78,7 @@ class RtpPacket:
 
 	def seqNum(self):
 		"""Return sequence (frame) number."""
-		seqNum = self.header[2] << 8 | self.header[3]  
+		seqNum = self.header[2] << 8 | self.header[3]  #header[2] shift left for 8 bits then does bit or with header[3]
 		return int(seqNum)
 
 	def timestamp(self):
