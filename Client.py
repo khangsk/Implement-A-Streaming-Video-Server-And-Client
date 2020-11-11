@@ -86,18 +86,19 @@ class Client:
 
 	def exitClient(self):
 		"""Teardown button handler."""
-		print("Video data rate = {0} / {1} = {2} bps".format(self.countPayload, self.timeexe, self.countPayload / self.timeexe))
+		if self.state == self.READY and self.timeexe:
+			print("Video data rate = {0} / {1} = {2} bps". \
+				format(self.countPayload, self.timeexe, self.countPayload / self.timeexe))
 		self.sendRtspRequest(self.TEARDOWN)
 		#self.handler()
 		self.master.destroy() # Close the gui window
 		try:
 			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
 		except:
+			pass
+		if self.frameNbr:
 			rate = float((self.frameNbr - self.counter)/self.frameNbr)
 			print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
-			sys.exit(0)
-		rate = float((self.frameNbr - self.counter)/self.frameNbr)
-		print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
 		sys.exit(0)
 
 	def pauseMovie(self):
