@@ -2,7 +2,7 @@ from tkinter import *
 import tkinter.messagebox
 from PIL import Image, ImageTk
 import socket, threading, sys, traceback, os
-
+import time
 from RtpPacket import RtpPacket
 
 CACHE_FILE_NAME = "cache-"
@@ -18,8 +18,13 @@ class Client:
 	PLAY = 1
 	PAUSE = 2
 	TEARDOWN = 3
-
+	
+	countPayload = 0
 	counter = 0
+
+	timestart = 0
+	timeend = 0
+	timeexe = 0
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
 		self.master = master
@@ -81,26 +86,32 @@ class Client:
 
 	def exitClient(self):
 		"""Teardown button handler."""
+		print("Video data rate = {0} / {1} = {2} bps".format(self.countPayload, self.timeexe, self.countPayload / self.timeexe))
 		self.sendRtspRequest(self.TEARDOWN)
 		#self.handler()
 		self.master.destroy() # Close the gui window
 		try:
 			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
 		except:
+			rate = float((self.frameNbr - self.counter)/self.frameNbr)
+			print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
 			sys.exit(0)
-		rate = float(self.counter/self.frameNbr)
+		rate = float((self.frameNbr - self.counter)/self.frameNbr)
 		print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
 		sys.exit(0)
 
 	def pauseMovie(self):
 		"""Pause button handler."""
 		if self.state == self.PLAYING:
+			self.timeend = time.time()
+			self.timeexe += self.timeend - self.timestart
 			self.sendRtspRequest(self.PAUSE)
 
 	def playMovie(self):
 		"""Play button handler."""
 		if self.state == self.READY:
 			# Create a new thread to listen for RTP packets
+			self.timestart = time.time()
 			print("Playing Movie")
 			threading.Thread(target=self.listenRtp).start()
 			self.playEvent = threading.Event()
@@ -116,14 +127,19 @@ class Client:
 					rtpPacket.decode(data)
 					
 					currFrameNbr = rtpPacket.seqNum()
+					self.counter += 1
 					print("Current Seq Num: " + str(currFrameNbr))
 										
 					if currFrameNbr > self.frameNbr: # Discard the late packet
 						self.frameNbr = currFrameNbr
+						self.countPayload += len(rtpPacket.getPayload())
 						self.updateMovie(self.writeFrame(rtpPacket.getPayload()))
 
 			except:
 				# Stop listening upon requesting PAUSE or TEARDOWN
+				if self.state == self.PLAYING:
+					self.pauseMovie()
+					print('-'*60 + "\nLast packet is recevied!!!" +"\n" + '-'*60)
 				print("Didn't receive data!")
 				if self.playEvent.isSet():
 					break
