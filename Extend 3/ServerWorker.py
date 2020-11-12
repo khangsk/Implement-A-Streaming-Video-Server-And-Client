@@ -4,6 +4,8 @@ import sys, traceback, threading, socket
 from VideoStream import VideoStream
 from RtpPacket import RtpPacket
 
+MJPEG_TYPE = 26
+
 class ServerWorker:
 	SETUP = 'SETUP'
 	PLAY = 'PLAY'
@@ -105,6 +107,7 @@ class ServerWorker:
 			try: self.clientInfo['event'].set()
 			except: pass
 			
+			self.state = self.INIT
 			self.replyRtsp(self.OK_200, seq[0])
 			
 			# Close the RTP socket
@@ -151,7 +154,7 @@ class ServerWorker:
 		extension = 0
 		cc = 0
 		marker = 0
-		pt = 26 # MJPEG type
+		pt = MJPEG_TYPE
 		seqnum = frameNbr
 		ssrc = 0 
 		
@@ -183,9 +186,9 @@ class ServerWorker:
 			reply = 'RTSP/1.0 200 OK\nCSeq: ' + seq + '\nSession: ' + str(self.clientInfo['session'])
 			
 			descriptionBody = "\n\nv=0"
+			descriptionBody += "\nm=video " + self.clientInfo['rtpPort'] + " RTP/AVP " + str(MJPEG_TYPE)
 			descriptionBody += "\na=control:streamid=" + str(self.clientInfo['session'])
 			descriptionBody += "\na=mimetype:string;\"video/MJPEG\""
-			descriptionBody += '\na=charset:utf-8'
 
 			reply += "\n\nContent-Base: " + self.clientInfo['VideoFileName']
 			reply += "\nContent-Type: " + "application/sdp"
