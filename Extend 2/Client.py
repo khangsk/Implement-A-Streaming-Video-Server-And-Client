@@ -20,6 +20,7 @@ class Client:
 	TEARDOWN = 3
 	check = False
 	counter = 0
+	checkTeardown = False
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
 		self.master = master
@@ -74,6 +75,7 @@ class Client:
 			try: os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
 			except: pass
 			time.sleep(1)
+			self.checkTeardown = True
 			self.state = self.INIT
 			# self.master.protocol("WM_DELETE_WINDOW", self.handler)
 			self.rtspSeq = 0
@@ -85,11 +87,14 @@ class Client:
 			self.check = False
 			self.connectToServer()
 			self.rtpSocket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+			self.label.pack_forget()
+			self.label.image = ''
 			self.setupMovie()
-
+			
 	def setupMovie(self):
 		"""Setup button handler."""
 		if self.state == self.INIT:
+			self.checkTeardown = False
 			self.sendRtspRequest(self.SETUP)
 
 	def exitClient(self):
@@ -169,9 +174,12 @@ class Client:
 			photo = ImageTk.PhotoImage(Image.open(imageFile)) #stuck here !!!!!!
 		except:
 			print("photo error")
-
-		self.label.configure(image = photo, height=288)
-		self.label.image = photo
+		if self.checkTeardown:
+			self.label.configure(image = '', height=288)
+			self.label.image = ''
+		else:
+			self.label.configure(image = photo, height=288)
+			self.label.image = photo
 
 	def connectToServer(self):
 		"""Connect to the Server. Start a new RTSP/TCP session."""
