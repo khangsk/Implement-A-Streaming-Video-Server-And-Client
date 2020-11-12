@@ -23,6 +23,7 @@ class Client:
 	countPayload = 0
 	counter = 0
 	checkPlay = False
+	checkTeardown = False
 	timestart = 0
 	timeend = 0
 	timeexe = 0
@@ -89,6 +90,7 @@ class Client:
 	def setupMovie(self):
 		"""Setup button handler."""
 		if self.state == self.INIT:
+			self.checkTeardown = False
 			self.sendRtspRequest(self.SETUP)
 	
 	def describe(self):
@@ -99,9 +101,11 @@ class Client:
 	def resetMovie(self):
 		if self.checkPlay:
 			self.pauseMovie()
-			try: os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
-			except: pass
+			for i in os.listdir():
+				if i.find(CACHE_FILE_NAME) == 0:
+					os.remove(i)
 			time.sleep(1)
+			self.checkTeardown = True
 			self.state = self.INIT
 			# self.master.protocol("WM_DELETE_WINDOW", self.handler)
 			self.rtspSeq = 0
@@ -117,6 +121,8 @@ class Client:
 			self.timeexe = 0
 			self.connectToServer()
 			self.rtpSocket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+			self.label.pack_forget()
+			self.label.image = ''
 
 	def exitClient(self):
 		"""Teardown button handler."""
@@ -126,10 +132,9 @@ class Client:
 		self.sendRtspRequest(self.TEARDOWN)
 		#self.handler()
 		self.master.destroy() # Close the gui window
-		try:
-			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
-		except:
-			pass
+		for i in os.listdir():
+			if i.find(CACHE_FILE_NAME) == 0:
+				os.remove(i)
 		if self.frameNbr:
 			rate = float((self.frameNbr - self.counter)/self.frameNbr)
 			print('-'*60 + "\nRTP Packet Loss Rate :" + str(rate) +"\n" + '-'*60)
@@ -209,8 +214,12 @@ class Client:
 		except:
 			print("photo error")
 
-		self.label.configure(image = photo, height=288)
-		self.label.image = photo
+		if self.checkTeardown:
+			self.label.configure(image = '', height=288)
+			self.label.image = ''
+		else:
+			self.label.configure(image = photo, height=288)
+			self.label.image = photo
 
 	def connectToServer(self):
 		"""Connect to the Server. Start a new RTSP/TCP session."""
@@ -366,11 +375,11 @@ class Client:
 
 						# Flag the teardownAcked to close the socket.
 						self.teardownAcked = 1
-					
+
 					elif self.requestSent == self.DESCRIBE:
 						# self.state = ...
 						print(data)
-						
+
 	def openRtpPort(self):
 		"""Open RTP socket binded to a specified port."""
 		#-------------
