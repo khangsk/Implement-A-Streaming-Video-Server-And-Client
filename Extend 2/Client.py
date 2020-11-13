@@ -89,6 +89,7 @@ class Client:
 			self.rtpSocket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 			self.label.pack_forget()
 			self.label.image = ''
+			time.sleep(0.5)
 			self.setupMovie()
 			
 	def setupMovie(self):

@@ -12,7 +12,6 @@ class RtpPacket:
 		"""Encode the RTP packet with header fields and payload."""
 
 		timestamp = int(time())
-		print("timestamp: " + str(timestamp))
 		#--------------
 		# TO COMPLETE
 		#--------------
